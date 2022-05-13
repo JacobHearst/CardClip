@@ -13,8 +13,7 @@ This project was created in an attempt to address my own personal struggles with
 
 - [x] Add/remove card from card clipboard
 - [x] Copy card clipboard to the user's clipboard
-- [x] Persist card clipboard in cookies
-- [ ] Add multiple of the same card to card clipboard
+- [x] Persist card clipboard in local storage
 - [ ] Clear card clipboard
 - [ ] View card clipboard
 

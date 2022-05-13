@@ -3,7 +3,6 @@
     "name": "Scryfall Clipboard",
     "version": "1.0",
     "description": "Adds an EDHREC-like clipboard feature to Scryfall",
-    "permissions": [ "cookies" ],
     "content_scripts": [
       {
         "matches": [ "*://scryfall.com/*" ],
