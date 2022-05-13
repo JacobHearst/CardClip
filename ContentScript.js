@@ -1,6 +1,6 @@
 // Load data
 let cards = []
-loadClipboardFromCookies()
+loadClipboardFromStorage()
 
 // Initialize UI elements
 const allCardItems = Array.from(document.getElementsByClassName("card-grid-item"))
@@ -16,7 +16,7 @@ function initCardElements(element) {
     let cardName = getCardName(element)
     if (cards.includes(cardName)) {
         element.appendChild(makeAddButton(element, true))
-        console.log(`${cardName} in cookies, added element`)
+        console.log(`${cardName} in local storage, added element`)
     }
 
     element.onmouseenter = () => {
@@ -39,21 +39,21 @@ function initCardElements(element) {
  */
 function makeAddButton(element, isSelected = false) {
     let button = document.createElement("button")
-    button.style.fontSize = 32,
-    button.style.borderRadius = "5px",
-    button.style.position = "absolute",
-    button.style.backgroundColor = "white",
-    button.style.top = 0,
-    button.style.right = 0,
-    button.style.width = "30px",
+    button.style.fontSize = 32
+    button.style.borderRadius = "5px"
+    button.style.position = "absolute"
+    button.style.backgroundColor = "white"
+    button.style.top = 0
+    button.style.right = 0
+    button.style.width = "30px"
     button.style.height = "30px"
-    
+
     button.style.opacity = isSelected ? 1 : 0.5
     button.textContent = isSelected ? "✓" : "+"
     button.className = isSelected ? "selected" : ""
 
     button.onclick = () => handleButtonClick(button, getCardName(element))
-    
+
     return button
 }
 
@@ -95,7 +95,7 @@ function handleButtonClick(button, cardName) {
         button.style.opacity = 1
     }
 
-    document.cookie = `cardClipboard=${cards};`
+    localStorage.setItem("cardClipboard", cards)
 }
 
 function copyClipboard() {
@@ -104,15 +104,14 @@ function copyClipboard() {
     navigator.clipboard.writeText(cardList)
 }
 
-function loadClipboardFromCookies() {
-    let cardListStartIndex = document.cookie.indexOf("=") + 1
-    let cardList = document.cookie.substring(cardListStartIndex)
+function loadClipboardFromStorage() {
+    let cardList = localStorage.getItem("cardClipboard")
 
     if (cardList.length > 0) {
         cards = cardList.split(",")
-        console.debug(`Loaded ${cards.length} cards from cookies`)
+        console.debug(`Loaded ${cards.length} cards from local storage: ${cardList}`)
     } else {
-        console.debug("No cards in cookies")
+        console.debug("No cards in local storage")
     }
 }
 
