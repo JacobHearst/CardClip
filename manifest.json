@@ -1,7 +1,7 @@
 {
     "manifest_version": 2,
     "name": "Scryfall Clipboard",
-    "version": "1.0.1",
+    "version": "1.1.0",
     "description": "Adds an EDHREC-like clipboard feature to Scryfall",
     "content_scripts": [
       {
