@@ -8,5 +8,10 @@
         "matches": [ "*://scryfall.com/*" ],
         "js": [ "ContentScript.js" ]
       }
+    ],
+    "web_accessible_resources": [
+      "img/duplicate.svg",
+      "img/trash.svg",
+      "img/list.svg"
     ]
   }
