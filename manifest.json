@@ -6,7 +6,7 @@
     "content_scripts": [
       {
         "matches": [ "*://scryfall.com/*" ],
-        "js": [ "ContentScript.js" ]
+        "js": ["ContentScripts/Clipboard.js", "ContentScripts/Animation.js"]
       }
     ],
     "web_accessible_resources": [

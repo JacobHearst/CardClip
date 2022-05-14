@@ -1,3 +1,4 @@
+console.debug("init")
 let cards = []
 const kBoxShadow = "0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 3px 5px 0 rgba(0, 0, 0, 0.19)"
 
@@ -9,6 +10,11 @@ try {
 
 function init() {
     cards = loadClipboardFromStorage()
+
+    const detailPageCards = document.getElementsByClassName("card-image")
+    if (detailPageCards && detailPageCards[0]) {
+        initCardElement(detailPageCards[0])
+    }
 
     // Initialize UI elements
     const allCardItems = Array.from(document.getElementsByClassName("card-grid-item"))
@@ -24,23 +30,27 @@ function init() {
  */
 function initCardElement(element) {
     let cardName = getCardName(element)
-    let existingButton = element.getElementsByTagName("button")[0]
+    let existingButton = findExistingButtons(element)[0]
+
     if (existingButton) {
-        existingButton.remove()
-    } else if (cards.includes(cardName)) {
+        element.removeChild(existingButton)
+    }
+    if (cards.includes(cardName)) {
         element.appendChild(makeAddButton(element, true))
         console.debug(`${cardName} in local storage, added element`)
+    } else {
+        console.debug(`${cardName} found on page but in local storage`)
     }
 
     element.onmouseenter = () => {
-        const existingButton = element.getElementsByTagName("button")[0]
+        const existingButton = findExistingButtons(element)[0]
         if (!existingButton) {
             element.appendChild(makeAddButton(element))
         }
     }
     element.onmouseleave = () => {
-        const existingButton = element.getElementsByTagName("button")[0]
-        if (existingButton.className !== "selected") {
+        const existingButton = findExistingButtons(element)[0]
+        if (existingButton.className === "unselected") {
             existingButton.remove()
         }
     }
@@ -64,7 +74,7 @@ function makeAddButton(element, isSelected = false) {
 
     button.style.opacity = isSelected ? 1 : 0.5
     button.textContent = isSelected ? "✓" : "+"
-    button.className = isSelected ? "selected" : ""
+    button.className = isSelected ? "selected" : "unselected"
 
     button.onclick = () => handleButtonClick(button, getCardName(element))
 
@@ -81,7 +91,7 @@ function makeAddButton(element, isSelected = false) {
 function makeImageButton(imageName, altText, onclick) {
     let button = document.createElement("button")
     button.style.padding = "5px"
-    button.onclick = onclick
+    button.onclick = () => onclick(button)
 
     let image = document.createElement("img")
     image.src = browser.extension.getURL(`img/${imageName}.svg`)
@@ -106,7 +116,7 @@ function makeButtonRow() {
     container.style.right = "20px"
     container.style.boxShadow = kBoxShadow
 
-    container.appendChild(makeImageButton("duplicate", "Copy selected cards", copyClipboard))
+    container.appendChild(makeImageButton("duplicate", "Copy selected cards", (btn) => copyClipboard(btn)))
     container.appendChild(makeImageButton("trash", "Clear card clipboard", clearClipboard))
     container.appendChild(makeImageButton("list", "View card clipboard", toggleClipboardList))
 
@@ -131,7 +141,7 @@ function makeCardClipboardList() {
     container.style.overflowY = "auto"
 
     let title = document.createElement("h3")
-    title.innerText = "Card Clipboard"
+    title.innerText = `${cards.length} cards selected`
     title.style.textAlign = "center"
     title.style.fontWeight = "bold"
     title.style.textDecoration = "underline"
@@ -142,12 +152,6 @@ function makeCardClipboardList() {
         let listItem = document.createElement("li")
         listItem.textContent = cards[index]
         list.append(listItem)
-    }
-
-    if (list.children.length === 0) {
-        let label = document.createElement("li")
-        label.textContent = "Clipboard is empty"
-        list.append(label)
     }
 
     container.appendChild(title)
@@ -169,7 +173,7 @@ function handleButtonClick(button, cardName) {
         cards.splice(index, 1)
 
         button.textContent = "+"
-        button.className = ""
+        button.className = "unselected"
         button.style.opacity = 0.5
     } else {
         if (!cards.includes(cardName)) {
@@ -189,7 +193,16 @@ function handleButtonClick(button, cardName) {
     }
 }
 
-function copyClipboard() {
+/**
+ * Copy the card clipboard to the keyboard clipboard
+ * @param {HTMLButtonElement} button The copy clipboard button
+ */
+function copyClipboard(button) {
+    try {
+        flashGreenAndFade(button)
+    } catch(e) {
+        console.error(e)
+    }
     let cardList = ""
     cards.forEach(card => cardList += `1 ${card}\n`)
     navigator.clipboard.writeText(cardList)
@@ -216,6 +229,10 @@ function toggleClipboardList() {
 }
 
 // Utility
+/**
+ * Get the card clipboard from local storage
+ * @returns {string[]} The cards stored in local storage.
+ */
 function loadClipboardFromStorage() {
     let cardList = localStorage.getItem("cardClipboard")
     if (cardList === null) {
@@ -232,10 +249,41 @@ function loadClipboardFromStorage() {
     return []
 }
 
+/**
+ * Get the name of a card, whether we're in the search page or the
+ * detail page of a single card
+ * @param {HTMLElement} element The grid item to get the title from
+ * @returns {string} the name of the card
+ */
 function getCardName(element) {
-    return element.getElementsByClassName("card-grid-item-invisible-label")[0].textContent
+    let labels = element.getElementsByClassName("card-grid-item-invisible-label")
+    if (labels.length > 0) {
+        return labels[0].textContent
+    }
+    
+    return getSingleCardName(element)
 }
 
+/**
+ * Gets the name of a card when we're on a card's detail page
+ * @returns {string} The name of the card
+ */
+function getSingleCardName() {
+    // Could be a card with multiple names
+    let cardNameElements = Array.from(document.getElementsByClassName("card-text-card-name"))
+    let cardNames = cardNameElements.map((elem) => {
+        console.debug(elem)
+        return elem.innerText
+    })
+
+    if (cardNames.length === 1) {
+        return cardNames[0]
+    } else if (cardNames.length > 1) {
+        return cardNames.join(" // ")
+    }
+}
+
+/** Update the clipboard list by regenerating it */
 function updateClipboardList() {
     let clipboardList = document.getElementById("scryfall-clipboard-list")
     if (clipboardList) {
@@ -243,4 +291,14 @@ function updateClipboardList() {
     }
 
     document.body.appendChild(makeCardClipboardList())
+}
+
+/**
+ * Searches an element for buttons owned by the extension
+ * @param {HTMLElement} element The element to search for buttons
+ * @returns {HTMLButtonElement[]} any buttons identified as belonging to the extension
+ */
+function findExistingButtons(element) {
+    let existingButtons = Array.from(element.getElementsByTagName("button"))
+    return existingButtons.filter((elem) => ["unselected", "selected"].includes(elem.className))
 }
