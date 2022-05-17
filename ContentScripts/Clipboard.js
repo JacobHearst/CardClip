@@ -94,7 +94,7 @@ function makeImageButton(imageName, altText, onclick) {
     button.onclick = () => onclick(button)
 
     let image = document.createElement("img")
-    image.src = browser.extension.getURL(`img/${imageName}.svg`)
+    image.src = chrome.runtime.getURL(`img/${imageName}.svg`)
     image.style.width = "25px"
     image.style.height = "25px"
     image.alt = altText

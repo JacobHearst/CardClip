@@ -1,0 +1,20 @@
+{
+    "manifest_version": 2,
+    "name": "Card Clip",
+    "version": "1.2.0",
+    "description": "Adds an EDHREC-like clipboard feature to Scryfall",
+    "content_scripts": [
+      {
+        "matches": [ "*://scryfall.com/*" ],
+        "js": ["ContentScripts/Clipboard.js", "ContentScripts/Animation.js"]
+      }
+    ],
+    "web_accessible_resources": [
+        "img/duplicate.svg",
+        "img/trash.svg",
+        "img/list.svg"
+    ],
+    "icons": {
+      "101": "img/cardclip.png"
+    }
+  }
