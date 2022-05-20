@@ -6,7 +6,7 @@ This project was created in an attempt to address my own personal struggles with
 
 ### Downloads
 - [Firefox](https://addons.mozilla.org/en-US/firefox/addon/scryfall-clipboard/)
-- Chrome - Pending approval
+- [Chrome](https://chrome.google.com/webstore/detail/card-clip/npglimimpnllddjddphoagcngmiipkkc?hl=en)
 
 ### Guiding Principles
 
