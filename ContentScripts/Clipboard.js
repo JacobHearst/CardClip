@@ -273,12 +273,6 @@ function getCardName(element) {
  * @returns {string} The name of the card
  */
 function getSingleCardName() {
-    // Does it have a flavor name like the godzilla cards?
-    let flavorNames = Array.from(document.getElementsByClassName("card-text-flavor-name"))
-    if (flavorNames.length > 0) {
-        return flavorNames[0].textContent
-    }
-
     // Could be a card with multiple names
     let cardNameElements = Array.from(document.getElementsByClassName("card-text-card-name"))
     let cardNames = cardNameElements.map((elem) => {
