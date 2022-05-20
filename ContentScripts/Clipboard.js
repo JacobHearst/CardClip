@@ -185,7 +185,8 @@ function handleButtonClick(button, cardName) {
         button.style.opacity = 1
     }
 
-    localStorage.setItem("cardClipboard", cards)
+    let encoded = JSON.stringify(cards)
+    localStorage.setItem("cardClipboard", encoded)
     try {
         updateClipboardList()
     } catch(e) {
@@ -240,7 +241,7 @@ function loadClipboardFromStorage() {
     }
 
     if (cardList.length > 0) {
-        const cardsArr = cardList.split(",")
+        const cardsArr = JSON.parse(cardList)
         console.debug(`Loaded ${cardsArr.length} cards from local storage: ${cardsArr}`)
         return cardsArr
     } 
@@ -256,9 +257,12 @@ function loadClipboardFromStorage() {
  * @returns {string} the name of the card
  */
 function getCardName(element) {
-    let labels = element.getElementsByClassName("card-grid-item-invisible-label")
-    if (labels.length > 0) {
-        return labels[0].textContent
+    let english = /^[A-Za-z0-9,\s()\.]*$/;
+    let labels = Array.from(element.getElementsByClassName("card-grid-item-invisible-label"))
+    for (index in labels) {
+        if (english.test(labels[index].textContent)) {
+            return labels[index].textContent
+        }
     }
     
     return getSingleCardName(element)
@@ -269,6 +273,12 @@ function getCardName(element) {
  * @returns {string} The name of the card
  */
 function getSingleCardName() {
+    // Does it have a flavor name like the godzilla cards?
+    let flavorNames = Array.from(document.getElementsByClassName("card-text-flavor-name"))
+    if (flavorNames.length > 0) {
+        return flavorNames[0].textContent
+    }
+
     // Could be a card with multiple names
     let cardNameElements = Array.from(document.getElementsByClassName("card-text-card-name"))
     let cardNames = cardNameElements.map((elem) => {
