@@ -1,5 +1,6 @@
 console.debug("init")
 let cards = []
+let showClipboardList = true
 const kBoxShadow = "0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 3px 5px 0 rgba(0, 0, 0, 0.19)"
 
 try {
@@ -221,10 +222,12 @@ function clearClipboard() {
 }
 
 function toggleClipboardList() {
-    let clipboardList = document.getElementById("scryfall-clipboard-list")
-    if (clipboardList) {
+    if (showClipboardList) {
+        const clipboardList = document.getElementById("scryfall-clipboard-list")
         document.body.removeChild(clipboardList)
+        showClipboardList = false
     } else {
+        showClipboardList = true
         document.body.appendChild(makeCardClipboardList())
     }
 }
@@ -294,7 +297,9 @@ function updateClipboardList() {
         document.body.removeChild(clipboardList)
     }
 
-    document.body.appendChild(makeCardClipboardList())
+    if (showClipboardList) {
+        document.body.appendChild(makeCardClipboardList())
+    }
 }
 
 /**
