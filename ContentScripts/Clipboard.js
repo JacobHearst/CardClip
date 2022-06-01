@@ -119,7 +119,7 @@ function makeButtonRow() {
 
     container.appendChild(makeImageButton("duplicate", "Copy selected cards", (btn) => copyClipboard(btn)))
     container.appendChild(makeImageButton("trash", "Clear card clipboard", clearClipboard))
-    container.appendChild(makeImageButton("list", "View card clipboard", toggleClipboardList))
+    container.appendChild(makeImageButton("clip", "View card clipboard", toggleClipboardList))
 
     return container
 }
