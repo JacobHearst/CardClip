@@ -244,9 +244,14 @@ function loadClipboardFromStorage() {
     }
 
     if (cardList.length > 0) {
-        const cardsArr = JSON.parse(cardList)
-        console.debug(`Loaded ${cardsArr.length} cards from local storage: ${cardsArr}`)
-        return cardsArr
+        try {
+            const cardsArr = JSON.parse(cardList)
+            console.debug(`Loaded ${cardsArr.length} cards from local storage: ${cardsArr}`)
+            return cardsArr
+        } catch(e) {
+            console.warn('Errored loading cards from local storage. Clearing stored clipboard')
+            localStorage.removeItem("cardClipboard")
+        }
     } 
 
     console.debug("No cards in local storage")
