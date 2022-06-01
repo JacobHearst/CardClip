@@ -30,8 +30,8 @@ function init() {
  * @param {HTMLElement} element The card element to add a hover listener to
  */
 function initCardElement(element) {
-    let cardName = getCardName(element)
-    let existingButton = findExistingButtons(element)[0]
+    const cardName = getCardName(element)
+    const existingButton = findExistingButtons(element)[0]
 
     if (existingButton) {
         element.removeChild(existingButton)
@@ -40,7 +40,11 @@ function initCardElement(element) {
         element.appendChild(makeAddButton(element, true))
         console.debug(`${cardName} in local storage, added element`)
     } else {
-        console.debug(`${cardName} found on page but in local storage`)
+        if (cardName) {
+            console.debug(`${cardName} found on page but not in local storage`)
+        } else {
+            console.warn(element)
+        }
     }
 
     element.onmouseenter = () => {
@@ -63,7 +67,7 @@ function initCardElement(element) {
  * @param {HTMLElement} element The element the button will be added to
  */
 function makeAddButton(element, isSelected = false) {
-    let button = document.createElement("button")
+    const button = document.createElement("button")
     button.style.fontSize = 32
     button.style.borderRadius = "5px"
     button.style.position = "absolute"
@@ -90,11 +94,11 @@ function makeAddButton(element, isSelected = false) {
  * @returns HTMLImageElement
  */
 function makeImageButton(imageName, altText, onclick) {
-    let button = document.createElement("button")
+    const button = document.createElement("button")
     button.style.padding = "5px"
     button.onclick = () => onclick(button)
 
-    let image = document.createElement("img")
+    const image = document.createElement("img")
     image.src = chrome.runtime.getURL(`img/${imageName}.svg`)
     image.style.width = "25px"
     image.style.height = "25px"
@@ -109,7 +113,7 @@ function makeImageButton(imageName, altText, onclick) {
  * @returns HTMLDivElement
  */
 function makeButtonRow() {
-    let container = document.createElement("div")
+    const container = document.createElement("div")
     container.style.backgroundColor = "#F5F6F7"
     container.style.borderRadius = "5px"
     container.style.position = "fixed"
@@ -129,7 +133,7 @@ function makeButtonRow() {
  * @returns HTMLUListElement
  */
 function makeCardClipboardList() {
-    let container = document.createElement("div")
+    const container = document.createElement("div")
     container.id = "scryfall-clipboard-list"
     container.style.position = "fixed"
     container.style.right = "20px"
@@ -141,16 +145,16 @@ function makeCardClipboardList() {
     container.style.maxHeight = "500px"
     container.style.overflowY = "auto"
 
-    let title = document.createElement("h3")
+    const title = document.createElement("h3")
     title.innerText = `${cards.length} cards selected`
     title.style.textAlign = "center"
     title.style.fontWeight = "bold"
     title.style.textDecoration = "underline"
     title.style.marginBottom = "5px"
 
-    let list = document.createElement("ul")
+    const list = document.createElement("ul")
     for(let index in cards) {
-        let listItem = document.createElement("li")
+        const listItem = document.createElement("li")
         listItem.textContent = cards[index]
         list.append(listItem)
     }
@@ -186,7 +190,7 @@ function handleButtonClick(button, cardName) {
         button.style.opacity = 1
     }
 
-    let encoded = JSON.stringify(cards)
+    const encoded = JSON.stringify(cards)
     localStorage.setItem("cardClipboard", encoded)
     try {
         updateClipboardList()
@@ -205,7 +209,7 @@ function copyClipboard(button) {
     } catch(e) {
         console.error(e)
     }
-    let cardList = ""
+    const cardList = ""
     cards.forEach(card => cardList += `1 ${card}\n`)
     navigator.clipboard.writeText(cardList)
 }
@@ -213,7 +217,7 @@ function copyClipboard(button) {
 function clearClipboard() {
     if (confirm("Clear card clipboard?")) {
         localStorage.removeItem("cardClipboard")
-        let clipboardList = document.getElementById("scryfall-clipboard-list")
+        const clipboardList = document.getElementById("scryfall-clipboard-list")
         if (clipboardList) {
             document.body.removeChild(clipboardList)
         }
@@ -238,7 +242,7 @@ function toggleClipboardList() {
  * @returns {string[]} The cards stored in local storage.
  */
 function loadClipboardFromStorage() {
-    let cardList = localStorage.getItem("cardClipboard")
+    const cardList = localStorage.getItem("cardClipboard")
     if (cardList === null) {
         return []
     }
@@ -265,10 +269,9 @@ function loadClipboardFromStorage() {
  * @returns {string} the name of the card
  */
 function getCardName(element) {
-    let english = /^[A-Za-z0-9,\s()\.]*$/;
-    let labels = Array.from(element.getElementsByClassName("card-grid-item-invisible-label"))
+    const labels = Array.from(element.getElementsByClassName("card-grid-item-invisible-label"))
     for (index in labels) {
-        if (english.test(labels[index].textContent)) {
+        if (labels[index].textContent) {
             return labels[index].textContent
         }
     }
@@ -282,11 +285,8 @@ function getCardName(element) {
  */
 function getSingleCardName() {
     // Could be a card with multiple names
-    let cardNameElements = Array.from(document.getElementsByClassName("card-text-card-name"))
-    let cardNames = cardNameElements.map((elem) => {
-        console.debug(elem)
-        return elem.innerText
-    })
+    const cardNameElements = Array.from(document.getElementsByClassName("card-text-card-name"))
+    const cardNames = cardNameElements.map(({ innerText }) => innerText)
 
     if (cardNames.length === 1) {
         return cardNames[0]
@@ -297,7 +297,7 @@ function getSingleCardName() {
 
 /** Update the clipboard list by regenerating it */
 function updateClipboardList() {
-    let clipboardList = document.getElementById("scryfall-clipboard-list")
+    const clipboardList = document.getElementById("scryfall-clipboard-list")
     if (clipboardList) {
         document.body.removeChild(clipboardList)
     }
@@ -313,6 +313,6 @@ function updateClipboardList() {
  * @returns {HTMLButtonElement[]} any buttons identified as belonging to the extension
  */
 function findExistingButtons(element) {
-    let existingButtons = Array.from(element.getElementsByTagName("button"))
+    const existingButtons = Array.from(element.getElementsByTagName("button"))
     return existingButtons.filter((elem) => ["unselected", "selected"].includes(elem.className))
 }
