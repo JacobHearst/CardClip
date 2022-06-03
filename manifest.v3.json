@@ -14,7 +14,7 @@
             "resources": [
                 "img/duplicate.svg",
                 "img/trash.svg",
-                "img/list.svg"
+                "img/clip.svg"
             ],
             "matches": ["*://scryfall.com/*"]
         }

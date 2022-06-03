@@ -12,7 +12,7 @@
     "web_accessible_resources": [
         "img/duplicate.svg",
         "img/trash.svg",
-        "img/list.svg"
+        "img/clip.svg"
     ],
     "icons": {
       "101": "img/cardclip.png"
