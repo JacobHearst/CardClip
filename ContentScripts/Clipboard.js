@@ -209,7 +209,7 @@ function copyClipboard(button) {
     } catch(e) {
         console.error(e)
     }
-    const cardList = ""
+    let cardList = ""
     cards.forEach(card => cardList += `1 ${card}\n`)
     navigator.clipboard.writeText(cardList)
 }
