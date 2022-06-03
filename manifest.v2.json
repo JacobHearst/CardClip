@@ -15,6 +15,9 @@
         "img/clip.svg"
     ],
     "icons": {
-      "101": "img/cardclip.png"
+        "16": "img/icon/logo16.png",
+        "32": "img/icon/logo32.png",
+        "48": "img/icon/logo48.png",
+        "128": "img/icon/logo128.png"
     }
   }
