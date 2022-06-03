@@ -29,12 +29,12 @@ jobs:
       - name: Make V2 Archive
         run: |
           mv manifest.v2.json manifest.json
-          zip V2.zip ContentScripts/ img/ manifest.json
+          zip -r V2.zip ContentScripts/ img/ manifest.json
 
       - name: Make V3 Archive
         run: |
           mv manifest.v3.json manifest.json
-          zip V3.zip ContentScripts/ img/ manifest.json
+          zip -r V3.zip ContentScripts/ img/ manifest.json
           
       - name: Upload V2 Artifacts
         uses: actions/upload-artifact@v3.1.0
