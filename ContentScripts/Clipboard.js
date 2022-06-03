@@ -30,12 +30,20 @@ function init() {
  * @param {HTMLElement} element The card element to add a hover listener to
  */
 function initCardElement(element) {
-    const cardName = getCardName(element)
-    const existingButton = findExistingButtons(element)[0]
+    // Handle cards with two faces
+    const transformButton = document.querySelectorAll("[data-component='card-backface-button']")[0]
+    if (transformButton) {
+        transformButton.onclick = () => transformButton(element)
+    }
 
+    // Remove any existing button
+    const existingButton = findExistingButtons(element)[0]
     if (existingButton) {
         element.removeChild(existingButton)
     }
+
+    // Determine if we need to add a selected button
+    const cardName = getCardName(element)
     if (cards.includes(cardName)) {
         element.appendChild(makeAddButton(element, true))
         console.debug(`${cardName} in local storage, added element`)
@@ -43,14 +51,16 @@ function initCardElement(element) {
         if (cardName) {
             console.debug(`${cardName} found on page but not in local storage`)
         } else {
+            console.warn("Couldn't find a name for the below element")
             console.warn(element)
         }
     }
 
+    // Add handlers to show the add button on hover
     element.onmouseenter = () => {
         const existingButton = findExistingButtons(element)[0]
         if (!existingButton) {
-            element.appendChild(makeAddButton(element))
+            element.appendChild(makeAddButton(element, false))
         }
     }
     element.onmouseleave = () => {
@@ -76,6 +86,13 @@ function makeAddButton(element, isSelected = false) {
     button.style.right = 0
     button.style.width = "30px"
     button.style.height = "30px"
+
+    const transform = getIconTransform(element)
+    if (transform) {
+        button.style.transform = transform
+        button.style.left = 0
+        button.style.right = undefined
+    }
 
     button.style.opacity = isSelected ? 1 : 0.5
     button.textContent = isSelected ? "✓" : "+"
@@ -165,6 +182,35 @@ function makeCardClipboardList() {
 }
 
 // Action handling
+/**
+ * Transform the add button to match the card it's attached to
+ * @param {HTMLElement} element The element the button will be added to
+ */
+ function transformButton(element) {
+    const existingButton = findExistingButtons(element)[0]
+    const transform = getIconTransform(element)
+    // If the parent is transformed
+    if (transform) {
+        // Move the button to the other corner
+        const oldRight = existingButton.style.right
+        existingButton.style.right = existingButton.style.left
+        existingButton.style.left = oldRight
+
+        // And apply the inverse transformation
+        existingButton.style.transform = transform
+    } else if (existingButton.style.transform) {
+        // Otherwise, if the button is already transformed
+
+        // Move the button to the other corner
+        const oldRight = existingButton.style.right
+        existingButton.style.right = existingButton.style.left
+        existingButton.style.left = oldRight
+        
+        // And clear the transformation
+        existingButton.style.transform = "rotate(0deg)"
+    }
+}
+
 /**
  * Handle the clipboard button being clicked
  * @param {HTMLButtonElement} button The button that was clicked
@@ -315,4 +361,18 @@ function updateClipboardList() {
 function findExistingButtons(element) {
     const existingButtons = Array.from(element.getElementsByTagName("button"))
     return existingButtons.filter((elem) => ["unselected", "selected"].includes(elem.className))
+}
+
+/**
+ * Get the transform string (if any) for the icon
+ * @param {HTMLElement} element The element the button will be added to
+ */
+ function getIconTransform(element) {
+    if (element.classList.contains("horizontal")) {
+        return "rotate(-90deg)"
+    }
+    
+    if (element.classList.contains("flip-backside")) {
+        return "rotateY(180deg)"
+    }
 }
