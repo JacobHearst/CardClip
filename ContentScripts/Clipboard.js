@@ -33,7 +33,7 @@ function initCardElement(element) {
     // Handle cards with two faces
     const transformButton = document.querySelectorAll("[data-component='card-backface-button']")[0]
     if (transformButton) {
-        transformButton.onclick = () => transformButton(element)
+        transformButton.onclick = () => transformButtonToMatchParent(element)
     }
 
     // Remove any existing button
@@ -202,28 +202,25 @@ function makeCardClipboardList() {
  * Transform the add button to match the card it's attached to
  * @param {HTMLElement} element The element the button will be added to
  */
- function transformButton(element) {
+ function transformButtonToMatchParent(element) {
     const existingButton = findExistingButtons(element)[0]
     const transform = getIconTransform(element)
     // If the parent is transformed
     if (transform) {
         // Move the button to the other corner
         const oldRight = existingButton.style.right
-        existingButton.style.right = existingButton.style.left
+        existingButton.style.right = 0
         existingButton.style.left = oldRight
 
         // And apply the inverse transformation
         existingButton.style.transform = transform
     } else if (existingButton.style.transform) {
         // Otherwise, if the button is already transformed
-
-        // Move the button to the other corner
-        const oldRight = existingButton.style.right
-        existingButton.style.right = existingButton.style.left
-        existingButton.style.left = oldRight
+        // Clear the styling
+        existingButton.style.left = "initial"
         
         // And clear the transformation
-        existingButton.style.transform = "rotate(0deg)"
+        existingButton.style.transform = ""
     }
 }
 
@@ -320,7 +317,7 @@ function loadClipboardFromStorage() {
     if (cardList.length > 0) {
         try {
             const cardsArr = JSON.parse(cardList)
-            console.debug(`Loaded ${cardsArr.length} cards from local storage: ${cardsArr}`)
+            console.debug(`Loaded ${cardsArr.length} cards from local storage`)
             return cardsArr
         } catch(e) {
             console.warn('Errored loading cards from local storage. Clearing stored clipboard')
