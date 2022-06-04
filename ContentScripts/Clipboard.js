@@ -36,7 +36,10 @@ function initCardElement(element) {
     if (existingButton) {
         element.removeChild(existingButton)
     }
-    if (cards.includes(cardName)) {
+    
+    const mappedCards = cards.map(({ cardName }) => cardName)
+    // Legacy format handling
+    if (mappedCards.includes(cardName) || cards.includes(cardName)) {
         element.appendChild(makeAddButton(element, true))
         console.debug(`${cardName} in local storage, added element`)
     } else {
@@ -81,7 +84,7 @@ function makeAddButton(element, isSelected = false) {
     button.textContent = isSelected ? "✓" : "+"
     button.className = isSelected ? "selected" : "unselected"
 
-    button.onclick = () => handleButtonClick(button, getCardName(element))
+    button.onclick = () => handleButtonClick(button, getCardName(element), getCardLink(element))
 
     return button
 }
@@ -155,7 +158,19 @@ function makeCardClipboardList() {
     const list = document.createElement("ul")
     for(let index in cards) {
         const listItem = document.createElement("li")
-        listItem.textContent = cards[index]
+
+        const card = cards[index]
+        const linkingToCurrentPage = card.cardLink === document.location.toString()
+        // Legacy format handling
+        if (card.cardLink && !linkingToCurrentPage) {
+            const link = document.createElement("a")
+            link.setAttribute("href", cards[index].cardLink)
+            link.textContent = cards[index].cardName
+            listItem.appendChild(link)
+        } else {
+            listItem.textContent = card
+        }
+
         list.append(listItem)
     }
 
@@ -169,20 +184,24 @@ function makeCardClipboardList() {
  * Handle the clipboard button being clicked
  * @param {HTMLButtonElement} button The button that was clicked
  * @param {string} cardName The name of the card the button is associated with
+ * @param {string} cardLink A link to the card that the button is associated with
  */
-function handleButtonClick(button, cardName) {
+function handleButtonClick(button, cardName, cardLink) {
+    const mappedCards = cards.map(({ cardName }) => cardName)
     if (button.className === "selected") {
-        const index = cards.indexOf(cardName)
+        const index = mappedCards.indexOf(cardName)
+        const legacyIndex = cards.indexOf(cardName)
         // Don't splice if there's no card in the list
-        if (index < 0) { return }
+        if (index < 0 && legacyIndex < 0) { return }
         cards.splice(index, 1)
 
         button.textContent = "+"
         button.className = "unselected"
         button.style.opacity = 0.5
     } else {
-        if (!cards.includes(cardName)) {
-            cards.push(cardName)
+        // Legacy format handling
+        if (!mappedCards.includes(cardName) && !cards.includes(cardName)) {
+            cards.push({ cardName, cardLink })
         }
 
         button.textContent = "✓"
@@ -210,7 +229,11 @@ function copyClipboard(button) {
         console.error(e)
     }
     let cardList = ""
-    cards.forEach(card => cardList += `1 ${card}\n`)
+    cards.forEach(card => {
+        // Legacy format handling
+        cardName = card.cardName ? card.cardName : card
+        cardList += `1 ${cardName}\n`
+    })
     navigator.clipboard.writeText(cardList)
 }
 
@@ -293,6 +316,21 @@ function getSingleCardName() {
     } else if (cardNames.length > 1) {
         return cardNames.join(" // ")
     }
+}
+
+/**
+ * Get the link for a card, whether we're in the search page or the
+ * detail page of a single card
+ * @param {HTMLElement} element The grid item to get the link from
+ * @returns {string} A link to the card
+ */
+function getCardLink(element) {
+    // If we're on a single card page, return the current url
+    if (document.location.pathname.includes("/card/")) {
+        return document.location.toString()
+    }
+
+    return element.children[0].getAttribute("href")
 }
 
 /** Update the clipboard list by regenerating it */
