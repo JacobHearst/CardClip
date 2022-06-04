@@ -160,13 +160,16 @@ function makeCardClipboardList() {
         const listItem = document.createElement("li")
 
         const card = cards[index]
-        const linkingToCurrentPage = card.cardLink === document.location.toString()
         // Legacy format handling
-        if (card.cardLink && !linkingToCurrentPage) {
-            const link = document.createElement("a")
-            link.setAttribute("href", cards[index].cardLink)
-            link.textContent = cards[index].cardName
-            listItem.appendChild(link)
+        if (card.cardLink) {
+            if (card.cardLink !== document.location.toString()) {
+                const link = document.createElement("a")
+                link.setAttribute("href", cards[index].cardLink)
+                link.textContent = cards[index].cardName
+                listItem.appendChild(link)
+            } else {
+                listItem.textContent = card.cardName
+            }
         } else {
             listItem.textContent = card
         }
