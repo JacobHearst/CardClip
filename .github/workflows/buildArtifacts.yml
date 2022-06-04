@@ -32,17 +32,17 @@ jobs:
           mkdir v2
           mv ContentScripts/ img/ manifest.json v2
 
-      - name: Prepare V3 Archive
-        run: |
-          mv manifest.v3.json manifest.json
-          mkdir v3
-          mv ContentScripts/ img/ manifest.json v3
-          
       - name: Upload V2 Artifacts
         uses: actions/upload-artifact@v3.1.0
         with:
           name: V2
           path: v2
+
+      - name: Prepare V3 Archive
+        run: |
+          mv manifest.v3.json manifest.json
+          mkdir v3
+          mv v2/ContentScripts/ v2/img/ manifest.json v3
           
       - name: Upload V3 Artifact
         uses: actions/upload-artifact@v3.1.0
