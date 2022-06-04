@@ -5,6 +5,7 @@ Some description of what was added/fixed/changed
 - [ ] Copy to clipboard
 - [ ] View card clipboard
 - [ ] Clear card clipboard
+- [ ] Clipboard persistence
 
 ## Edge Cases
 Edge cases that have caused issues in the past. Make sure to check individual card pages when testing.
