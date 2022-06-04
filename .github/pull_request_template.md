@@ -10,7 +10,7 @@ Some description of what was added/fixed/changed
 ## Edge Cases
 Edge cases that have caused issues in the past. Make sure to check individual card pages when testing.
 ### Layouts:
-- [ ] [Transform](https://scryfall.com/search?q=layout%3Asplit)
+- [ ] [Transform](https://scryfall.com/search?q=layout%3Atransform)
 - [ ] [Flip](https://scryfall.com/search?q=layout%3Aflip)
 - [ ] [Split](https://scryfall.com/search?q=layout%3Asplit)
 - [ ] [Planar](https://scryfall.com/search?q=layout%3Aplanar)
