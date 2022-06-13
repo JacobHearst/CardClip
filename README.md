@@ -15,11 +15,19 @@ This project was created in an attempt to address my own personal struggles with
 
 ### Planned Featurelist
 
-- [x] Add/remove card from card clipboard
-- [x] Copy card clipboard to the user's clipboard
-- [x] Persist card clipboard in local storage
-- [x] Clear card clipboard
-- [x] View card clipboard
+- [x] Card clipboard
+  - [x] Link to card page
+  - [x] Add/remove cards from clipboard
+  - [x] Copy card clipboard to the user's clipboard
+  - [x] Toggle clipboard visibility
+  - [x] Persist card clipboard in local storage
+  - [x] Clear card clipboard
+- [ ] Query History
+  - [ ] Add current query
+  - [ ] Remove individual query
+  - [ ] Clear all queries
+  - [ ] Toggle history visibility
+  - [ ] Persist history to local storage
 
 # Contributing
 
