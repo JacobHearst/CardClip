@@ -10,6 +10,11 @@ try {
 }
 
 function init() {
+    const clipboardList = document.getElementById("scryfall-clipboard-list")
+    if (clipboardList) {
+        document.body.removeChild(clipboardList)
+    }
+
     cards = loadClipboardFromStorage()
 
     const detailPageCards = document.getElementsByClassName("card-image")
@@ -43,9 +48,8 @@ function initCardElement(element) {
     }
     
     const cardName = getCardName(element)
-    const mappedCards = cards.map(({ cardName }) => cardName)
-    // Legacy format handling
-    if (mappedCards.includes(cardName) || cards.includes(cardName)) {
+    const cardNames = cards.map(card => card.cardName)
+    if (cardNames.includes(cardName)) {
         element.appendChild(makeAddButton(element, true))
         console.debug(`${cardName} in local storage, added element`)
     } else {
@@ -99,7 +103,7 @@ function makeAddButton(element, isSelected = false) {
     button.textContent = isSelected ? "✓" : "+"
     button.className = isSelected ? "selected" : "unselected"
 
-    button.onclick = () => handleButtonClick(button, getCardName(element), getCardLink(element))
+    button.onclick = () => handleAddButtonClick(button, getCardName(element), getCardLink(element))
 
     return button
 }
@@ -175,19 +179,30 @@ function makeCardClipboardList() {
         const listItem = document.createElement("li")
 
         const card = cards[index]
-        // Legacy format handling
-        if (card.cardLink) {
-            if (card.cardLink !== document.location.toString()) {
-                const link = document.createElement("a")
-                link.setAttribute("href", cards[index].cardLink)
-                link.textContent = cards[index].cardName
-                listItem.appendChild(link)
-            } else {
-                listItem.textContent = card.cardName
-            }
+        if (card.cardLink !== document.location.toString()) {
+            const link = document.createElement("a")
+            link.style.display = "inline-block"
+            link.setAttribute("href", cards[index].cardLink)
+            link.textContent = cards[index].cardName
+            listItem.appendChild(link)
         } else {
-            listItem.textContent = card
+            const cardLabel = document.createElement("p")
+            cardLabel.textContent = card.cardName
+            cardLabel.style.display = "inline-block"
+            listItem.appendChild(cardLabel)
         }
+
+        const deleteButton = document.createElement("button")
+        deleteButton.textContent = "x"
+        deleteButton.style.float = "right"
+        deleteButton.style.backgroundColor = "transparent"
+        deleteButton.style.border = "none"
+        deleteButton.style.textDecoration = "underline"
+        deleteButton.style.display = "inline-block"
+        deleteButton.style.paddingLeft = "5px"
+        deleteButton.style.color = "blue"
+        deleteButton.onclick = () => removeCard(card.cardName)
+        listItem.appendChild(deleteButton)
 
         list.append(listItem)
     }
@@ -228,40 +243,28 @@ function makeCardClipboardList() {
 }
 
 /**
- * Handle the clipboard button being clicked
+ * Handle the add button being clicked
  * @param {HTMLButtonElement} button The button that was clicked
  * @param {string} cardName The name of the card the button is associated with
  * @param {string} cardLink A link to the card that the button is associated with
  */
-function handleButtonClick(button, cardName, cardLink) {
-    const mappedCards = cards.map(({ cardName }) => cardName)
+function handleAddButtonClick(button, cardName, cardLink) {
+    const cardNames = cards.map(({ cardName }) => cardName)
     if (button.className === "selected") {
-        const index = mappedCards.indexOf(cardName)
-        const legacyIndex = cards.indexOf(cardName)
-        // Don't splice if there's no card in the list
-        if (index < 0 && legacyIndex < 0) { return }
-        cards.splice(index, 1)
+        removeCard(cardName)
 
         button.textContent = "+"
         button.className = "unselected"
         button.style.opacity = 0.5
     } else {
-        // Legacy format handling
-        if (!mappedCards.includes(cardName) && !cards.includes(cardName)) {
+        if (!cardNames.includes(cardName)) {
             cards.push({ cardName, cardLink })
+            updateStorage()
         }
 
         button.textContent = "✓"
         button.className = "selected"
         button.style.opacity = 1
-    }
-
-    const encoded = JSON.stringify(cards)
-    localStorage.setItem("cardClipboard", encoded)
-    try {
-        updateClipboardList()
-    } catch(e) {
-        console.error(e)
     }
 }
 
@@ -277,9 +280,7 @@ function copyClipboard(button) {
     }
     let cardList = ""
     cards.forEach(card => {
-        // Legacy format handling
-        cardName = card.cardName ? card.cardName : card
-        cardList += `1 ${cardName}\n`
+        cardList += `1 ${card.cardName}\n`
     })
     navigator.clipboard.writeText(cardList)
 }
@@ -287,10 +288,6 @@ function copyClipboard(button) {
 function clearClipboard() {
     if (confirm("Clear card clipboard?")) {
         localStorage.removeItem("cardClipboard")
-        const clipboardList = document.getElementById("scryfall-clipboard-list")
-        if (clipboardList) {
-            document.body.removeChild(clipboardList)
-        }
         init()
     }
 }
@@ -406,7 +403,7 @@ function findExistingButtons(element) {
  * Get the transform string (if any) for the icon
  * @param {HTMLElement} element The element the button will be added to
  */
- function getIconTransform(element) {
+function getIconTransform(element) {
     if (element.classList.contains("horizontal")) {
         return "rotate(-90deg)"
     }
@@ -414,4 +411,26 @@ function findExistingButtons(element) {
     if (element.classList.contains("flip-backside")) {
         return "rotateY(180deg)"
     }
+}
+
+function updateStorage() {
+    const encoded = JSON.stringify(cards)
+    localStorage.setItem("cardClipboard", encoded)
+    try {
+        updateClipboardList()
+    } catch (e) {
+        console.error(e)
+    }
+}
+
+function removeCard(cardName) {
+    const cardNames = cards.map(card => card.cardName)
+    const index = cardNames.indexOf(cardName)
+    // Don't splice if there's no card in the list
+    if (index < 0) { return }
+    cards.splice(index, 1)
+
+    // Refresh the UI
+    updateStorage()
+    init()
 }
