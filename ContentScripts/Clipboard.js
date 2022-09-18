@@ -2,30 +2,39 @@ console.debug("init")
 let cards = []
 let showClipboardList = true
 const kBoxShadow = "0 2px 4px 0 rgba(0, 0, 0, 0.2), 0 3px 5px 0 rgba(0, 0, 0, 0.19)"
+let retries = 0
 
 try {
     init()
-} catch(e) {
+} catch (e) {
     console.error(e)
 }
 
 function init() {
-    const clipboardList = document.getElementById("scryfall-clipboard-list")
-    if (clipboardList) {
-        document.body.removeChild(clipboardList)
-    }
+    clearUI()
 
     cards = loadClipboardFromStorage()
 
     const detailPageCards = document.getElementsByClassName("card-image")
-    if (detailPageCards && detailPageCards[0]) {
+    const isTagger = document.location.host.includes("tagger")
+    if (detailPageCards && detailPageCards[0] && !isTagger) {
         initCardElement(detailPageCards[0])
     }
 
     // Initialize UI elements
     const allCardItems = Array.from(document.getElementsByClassName("card-grid-item"))
     const actualCardItems = allCardItems.filter(elem => !elem.getAttribute("aria-hidden"))
-    actualCardItems.forEach(initCardElement)
+    if (actualCardItems.length == 0 && retries < 3) {
+        console.debug(`No cards detected, sleeping and trying ${3 - retries} more times`)
+        retries++
+        sleep(500).then(init)
+    } else if (actualCardItems.length > 0) {
+        console.debug("Found cards, initializing card elements")
+        actualCardItems.forEach(initCardElement)
+    } else {
+        console.debug("No cards found and out of retries")
+    }
+
     document.body.appendChild(makeButtonRow())
     document.body.appendChild(makeCardClipboardList())
 }
@@ -46,7 +55,7 @@ function initCardElement(element) {
     if (existingButton) {
         element.removeChild(existingButton)
     }
-    
+
     const cardName = getCardName(element)
     const cardNames = cards.map(card => card.cardName)
     if (cardNames.includes(cardName)) {
@@ -91,6 +100,7 @@ function makeAddButton(element, isSelected = false) {
     button.style.right = 0
     button.style.width = "30px"
     button.style.height = "30px"
+    button.style.border = "none"
 
     const transform = getIconTransform(element)
     if (transform) {
@@ -118,6 +128,7 @@ function makeAddButton(element, isSelected = false) {
 function makeImageButton(imageName, altText, onclick) {
     const button = document.createElement("button")
     button.style.padding = "5px"
+    button.style.border = "none"
     button.onclick = () => onclick(button)
 
     const image = document.createElement("img")
@@ -136,6 +147,7 @@ function makeImageButton(imageName, altText, onclick) {
  */
 function makeButtonRow() {
     const container = document.createElement("div")
+    container.id = "card-clip-button-row"
     container.style.backgroundColor = "#F5F6F7"
     container.style.borderRadius = "5px"
     container.style.position = "fixed"
@@ -173,9 +185,12 @@ function makeCardClipboardList() {
     title.style.fontWeight = "bold"
     title.style.textDecoration = "underline"
     title.style.marginBottom = "5px"
+    title.style.color = "black"
+    title.style.fontSize = "15px"
 
     const list = document.createElement("ul")
-    for(let index in cards) {
+    list.style.paddingLeft = "0"
+    for (let index in cards) {
         const listItem = document.createElement("li")
 
         const card = cards[index]
@@ -189,6 +204,7 @@ function makeCardClipboardList() {
             const cardLabel = document.createElement("p")
             cardLabel.textContent = card.cardName
             cardLabel.style.display = "inline-block"
+            cardLabel.style.color = "black"
             listItem.appendChild(cardLabel)
         }
 
@@ -217,7 +233,7 @@ function makeCardClipboardList() {
  * Transform the add button to match the card it's attached to
  * @param {HTMLElement} element The element the button will be added to
  */
- function transformButton(element) {
+function transformButton(element) {
     const existingButton = findExistingButtons(element)[0]
     const transform = getIconTransform(element)
     // If the parent is transformed
@@ -236,7 +252,7 @@ function makeCardClipboardList() {
         const oldRight = existingButton.style.right
         existingButton.style.right = existingButton.style.left
         existingButton.style.left = oldRight
-        
+
         // And clear the transformation
         existingButton.style.transform = "rotate(0deg)"
     }
@@ -249,7 +265,7 @@ function makeCardClipboardList() {
  * @param {string} cardLink A link to the card that the button is associated with
  */
 function handleAddButtonClick(button, cardName, cardLink) {
-    const cardNames = cards.map(({ cardName }) => cardName)
+    const cardNames = cards.map(card => card.cardName)
     if (button.className === "selected") {
         removeCard(cardName)
 
@@ -275,7 +291,7 @@ function handleAddButtonClick(button, cardName, cardLink) {
 function copyClipboard(button) {
     try {
         flashGreenAndFade(button)
-    } catch(e) {
+    } catch (e) {
         console.error(e)
     }
     let cardList = ""
@@ -319,11 +335,11 @@ function loadClipboardFromStorage() {
             const cardsArr = JSON.parse(cardList)
             console.debug(`Loaded ${cardsArr.length} cards from local storage: ${cardsArr}`)
             return cardsArr
-        } catch(e) {
+        } catch (e) {
             console.warn('Errored loading cards from local storage. Clearing stored clipboard')
             localStorage.removeItem("cardClipboard")
         }
-    } 
+    }
 
     console.debug("No cards in local storage")
     return []
@@ -336,13 +352,20 @@ function loadClipboardFromStorage() {
  * @returns {string} the name of the card
  */
 function getCardName(element) {
+    // Try to get the name using the invisible label
     const labels = Array.from(element.getElementsByClassName("card-grid-item-invisible-label"))
     for (index in labels) {
         if (labels[index].textContent) {
             return labels[index].textContent
         }
     }
-    
+
+    // Try to get the name using the alt text for the image (used primarily for tagger)
+    const images = element.getElementsByTagName("img")
+    if (images.length > 0) {
+        return images[0].getAttribute("alt")
+    }
+
     return getSingleCardName(element)
 }
 
@@ -353,7 +376,7 @@ function getCardName(element) {
 function getSingleCardName() {
     // Could be a card with multiple names
     const cardNameElements = Array.from(document.getElementsByClassName("card-text-card-name"))
-    const cardNames = cardNameElements.map(({ innerText }) => innerText)
+    const cardNames = cardNameElements.map(element => element.innerText)
 
     if (cardNames.length === 1) {
         return cardNames[0]
@@ -407,7 +430,7 @@ function getIconTransform(element) {
     if (element.classList.contains("horizontal")) {
         return "rotate(-90deg)"
     }
-    
+
     if (element.classList.contains("flip-backside")) {
         return "rotateY(180deg)"
     }
@@ -427,10 +450,28 @@ function removeCard(cardName) {
     const cardNames = cards.map(card => card.cardName)
     const index = cardNames.indexOf(cardName)
     // Don't splice if there's no card in the list
-    if (index < 0) { return }
+    if (index < 0) {
+        return
+    }
     cards.splice(index, 1)
 
     // Refresh the UI
     updateStorage()
     init()
+}
+
+function clearUI() {
+    const clipboardList = document.getElementById("scryfall-clipboard-list")
+    if (clipboardList) {
+        document.body.removeChild(clipboardList)
+    }
+
+    const buttonRow = document.getElementById("card-clip-button-row")
+    if (buttonRow) {
+        document.body.removeChild(buttonRow)
+    }
+}
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
