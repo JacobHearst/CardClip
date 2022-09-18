@@ -16,7 +16,7 @@
                 "img/trash.svg",
                 "img/clip.svg"
             ],
-            "matches": ["*://scryfall.com/*"]
+            "matches": ["*://scryfall.com/*", "*://tagger.scryfall.com/*"]
         }
     ],
     "icons": {
