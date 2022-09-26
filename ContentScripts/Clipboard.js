@@ -19,9 +19,15 @@ function init() {
     const isTagger = document.location.host.includes("tagger")
     if (detailPageCards && detailPageCards[0] && !isTagger) {
         initCardElement(detailPageCards[0])
+    } else {
+        searchPageInit()
     }
 
-    // Initialize UI elements
+    document.body.appendChild(makeButtonRow())
+    document.body.appendChild(makeCardClipboardList())
+}
+
+function searchPageInit() {
     const allCardItems = Array.from(document.getElementsByClassName("card-grid-item"))
     const actualCardItems = allCardItems.filter(elem => !elem.getAttribute("aria-hidden"))
     if (actualCardItems.length == 0 && retries < 3) {
@@ -34,9 +40,6 @@ function init() {
     } else {
         console.debug("No cards found and out of retries")
     }
-
-    document.body.appendChild(makeButtonRow())
-    document.body.appendChild(makeCardClipboardList())
 }
 
 /**
@@ -45,9 +48,9 @@ function init() {
  */
 function initCardElement(element) {
     // Handle cards with two faces
-    const transformButton = document.querySelectorAll("[data-component='card-backface-button']")[0]
-    if (transformButton) {
-        transformButton.onclick = () => transformButton(element)
+    const transformButtonElement = document.querySelectorAll("[data-component='card-backface-button']")[0]
+    if (transformButtonElement) {
+        transformButtonElement.onclick = () => transformButton(element)
     }
 
     // Remove any existing button
@@ -333,7 +336,7 @@ function loadClipboardFromStorage() {
     if (cardList.length > 0) {
         try {
             const cardsArr = JSON.parse(cardList)
-            console.debug(`Loaded ${cardsArr.length} cards from local storage: ${cardsArr}`)
+            console.debug(`Loaded ${cardsArr.length} cards from local storage: ${cardsArr.map(card => card.cardName)}`)
             return cardsArr
         } catch (e) {
             console.warn('Errored loading cards from local storage. Clearing stored clipboard')
@@ -362,7 +365,7 @@ function getCardName(element) {
 
     // Try to get the name using the alt text for the image (used primarily for tagger)
     const images = element.getElementsByTagName("img")
-    if (images.length > 0) {
+    if (images.length > 0 && images[0].getAttribute("alt")) {
         return images[0].getAttribute("alt")
     }
 
