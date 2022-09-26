@@ -82,7 +82,7 @@ function initCardElement(element) {
     }
     element.onmouseleave = () => {
         const existingButton = findExistingButtons(element)[0]
-        if (existingButton.className === "unselected") {
+        if (existingButton && existingButton.className === "unselected") {
             existingButton.remove()
         }
     }
