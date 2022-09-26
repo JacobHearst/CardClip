@@ -5,7 +5,7 @@
     "description": "Adds an EDHREC-like clipboard feature to Scryfall",
     "content_scripts": [
       {
-        "matches": [ "*://scryfall.com/*" ],
+        "matches": ["*://scryfall.com/*", "*://tagger.scryfall.com/*"],
         "js": ["ContentScripts/Clipboard.js", "ContentScripts/Animation.js"]
       }
     ],
@@ -16,7 +16,7 @@
                 "img/trash.svg",
                 "img/clip.svg"
             ],
-            "matches": ["*://scryfall.com/*"]
+            "matches": ["*://scryfall.com/*", "*://tagger.scryfall.com/*"]
         }
     ],
     "icons": {
