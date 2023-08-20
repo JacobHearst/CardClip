@@ -158,11 +158,19 @@ function makeButtonRow() {
     container.style.right = "20px"
     container.style.boxShadow = kBoxShadow
 
+    container.appendChild(makeImageButton("grid", "View clipboard as Scryfall search", ))
     container.appendChild(makeImageButton("duplicate", "Copy selected cards", (btn) => copyClipboard(btn)))
     container.appendChild(makeImageButton("trash", "Clear card clipboard", clearClipboard))
     container.appendChild(makeImageButton("clip", "View card clipboard", toggleClipboardList))
 
     return container
+}
+
+function scryfallSearchClipboard() {
+    const cardQuery = cards.map((card) => `name:"${card.cardName}"`).join(" or ")
+    const url = `https://scryfall.com/search?q=${encodeURIComponent(cardQuery)}`
+    console.debug(`Navigating to ${url}`)
+    window.location = url
 }
 
 /**
