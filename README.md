@@ -13,7 +13,7 @@ This project was created in an attempt to address my own personal struggles with
 1. Don't modify or obstruct any existing Scryfall functionality.
 2. This is NOT a deckbuilding service. Make no assumptions about what the user is collecting cards for
 
-### Planned Featurelist
+### Features
 
 - [x] Card clipboard
   - [x] Link to card page
@@ -22,12 +22,6 @@ This project was created in an attempt to address my own personal struggles with
   - [x] Toggle clipboard visibility
   - [x] Persist card clipboard in local storage
   - [x] Clear card clipboard
-- [ ] Query History
-  - [ ] Add current query
-  - [ ] Remove individual query
-  - [ ] Clear all queries
-  - [ ] Toggle history visibility
-  - [ ] Persist history to local storage
 
 # Contributing
 
